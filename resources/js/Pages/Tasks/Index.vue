@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 const props = defineProps({
     tasks: Object
@@ -9,6 +9,29 @@ const props = defineProps({
 const isModalOpen = ref(false);
 const isStatsModalOpen = ref(false);
 const filterStatus = ref('All Status');
+const isDarkMode = ref(false);
+
+onMounted(() => {
+    isDarkMode.value = localStorage.getItem('theme') === 'dark';
+    updateTheme();
+});
+
+watch(isDarkMode, (newValue) => {
+    localStorage.setItem('theme', newValue ? 'dark' : 'light');
+    updateTheme();
+});
+
+const updateTheme = () => {
+    if (isDarkMode.value) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+};
+
+const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value;
+};
 
 // Prevent selecting past dates in HTML input
 const minDate = new Date().toISOString().split('T')[0];
@@ -147,6 +170,14 @@ const getStatusColor = (status) => {
                     </span>
                  </div>
                 <div class="flex items-center gap-2 sm:gap-4">
+                    <button @click="toggleTheme" class="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800" title="Toggle Dark Mode">
+                        <svg v-if="!isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
                     <button @click="isModalOpen = true" class="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2 text-sm sm:text-base">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />

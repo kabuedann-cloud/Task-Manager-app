@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 
 const props = defineProps({
     report: Object,
@@ -34,6 +34,30 @@ const completionRate = computed(() => {
     const doneCount = props.report.data.find(r => r.status === 'done')?.count || 0;
     return Math.round((doneCount / props.total) * 100);
 });
+
+const isDarkMode = ref(false);
+
+onMounted(() => {
+    isDarkMode.value = localStorage.getItem('theme') === 'dark';
+    updateTheme();
+});
+
+watch(isDarkMode, (newValue) => {
+    localStorage.setItem('theme', newValue ? 'dark' : 'light');
+    updateTheme();
+});
+
+const updateTheme = () => {
+    if (isDarkMode.value) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+};
+
+const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value;
+};
 </script>
 
 <template>
@@ -62,6 +86,14 @@ const completionRate = computed(() => {
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-3 w-full md:w-auto mt-2 md:mt-0 no-print">
+                    <button @click="toggleTheme" class="md:flex-none p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center" title="Toggle Dark Mode">
+                        <svg v-if="!isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
                     <Link href="/" class="flex-1 md:flex-none px-5 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all text-center text-sm no-underline flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
