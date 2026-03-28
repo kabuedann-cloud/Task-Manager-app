@@ -34,7 +34,11 @@ class TaskController extends Controller
 
     public function store(StoreTaskRequest $request, CreateTaskAction $createTaskAction)
     {
-        $createTaskAction->execute($request->validated());
+        $task = $createTaskAction->execute($request->validated());
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($task, 201);
+        }
 
         return to_route('tasks.index');
     }
@@ -42,7 +46,11 @@ class TaskController extends Controller
     public function updateStatus(Request $request, Task $task, UpdateTaskStatusAction $updateTaskStatusAction)
     {
         $status = StatusEnum::from($request->status);
-        $updateTaskStatusAction->execute($task, $status);
+        $task = $updateTaskStatusAction->execute($task, $status);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($task);
+        }
 
         return to_route('tasks.index');
     }
@@ -54,6 +62,10 @@ class TaskController extends Controller
         }
 
         $task->delete();
+
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return response()->json(['message' => 'Task deleted successfully']);
+        }
 
         return to_route('tasks.index');
     }
