@@ -115,23 +115,24 @@ const getStatusColor = (status) => {
     <div class="min-h-screen bg-slate-50 dark:bg-zinc-950 transition-colors duration-300">
         <!-- Premium Navigation -->
         <nav class="sticky top-0 z-40 w-full backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 border-b border-slate-200 dark:border-zinc-800">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400">
+                    <span class="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400 truncate">
                         Task Management
                     </span>
                  </div>
-                <div class="flex items-center gap-4">
-                    <button @click="isModalOpen = true" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2">
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <button @click="isModalOpen = true" class="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2 text-sm sm:text-base">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                         </svg>
-                        New Task
+                        <span class="hidden sm:inline">New Task</span>
+                        <span class="sm:hidden">Add</span>
                     </button>
                 </div>
             </div>
@@ -139,27 +140,27 @@ const getStatusColor = (status) => {
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Summary Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
                 <div v-for="stat in [
                     { label: 'Total Tasks', value: tasks.data.length, color: 'emerald' },
                     { label: 'Pending', value: tasks.data.filter(t => t.status === 'pending').length, color: 'slate' },
                     { label: 'In Progress', value: tasks.data.filter(t => t.status === 'in_progress').length, color: 'blue' },
                     { label: 'Completed', value: tasks.data.filter(t => t.status === 'done').length, color: 'green' }
-                ]" :key="stat.label" class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">{{ stat.label }}</p>
-                    <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ stat.value }}</h3>
+                ]" :key="stat.label" class="bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
+                    <p class="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">{{ stat.label }}</p>
+                    <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ stat.value }}</h3>
                 </div>
             </div>
 
             <!-- Task Board / List -->
             <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden">
-                <div class="px-8 py-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-800/50">
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <div class="px-4 sm:px-8 py-6 border-b border-slate-200 dark:border-zinc-800 flex flex-row items-center justify-between gap-4 bg-slate-50/50 dark:bg-zinc-800/50">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         Recent Tasks
-                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs rounded-full">Development</span>
+                        <span class="hidden sm:inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs rounded-full">Development</span>
                     </h2>
-                    <div class="flex gap-2">
-                        <select v-model="filterStatus" class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                    <div class="flex-shrink-0">
+                        <select v-model="filterStatus" class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs sm:text-sm rounded-lg px-2 sm:px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all w-28 sm:w-auto">
                             <option>All Status</option>
                             <option>Pending</option>
                             <option>In Progress</option>
@@ -171,44 +172,44 @@ const getStatusColor = (status) => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-zinc-800">
-                                <th class="px-8 py-5">Task Details</th>
-                                <th class="px-8 py-5 text-center">Priority</th>
-                                <th class="px-8 py-5 text-center">Due Date</th>
-                                <th class="px-8 py-5 text-center">Status</th>
-                                <th class="px-8 py-5 text-right">Actions</th>
+                            <tr class="text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-zinc-800 whitespace-nowrap">
+                                <th class="px-4 sm:px-8 py-5">Task Details</th>
+                                <th class="px-4 sm:px-8 py-5 text-center">Priority</th>
+                                <th class="px-4 sm:px-8 py-5 text-center">Due Date</th>
+                                <th class="px-4 sm:px-8 py-5 text-center">Status</th>
+                                <th class="px-4 sm:px-8 py-5 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50 dark:divide-zinc-800/50">
                             <tr v-if="filteredTasks.length === 0">
                                 <td colspan="5" class="px-8 py-12 text-center text-slate-400 italic">No tasks found. Create one to get started!</td>
                             </tr>
-                            <tr v-for="task in filteredTasks" :key="task.id" class="group hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                <td class="px-8 py-6">
-                                    <div class="font-bold text-slate-900 dark:text-zinc-100 text-sm leading-tight group-hover:text-emerald-600 transition-colors">{{ task.title }}</div>
+                            <tr v-for="task in filteredTasks" :key="task.id" class="group hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors whitespace-nowrap">
+                                <td class="px-4 sm:px-8 py-4 sm:py-6">
+                                    <div class="font-bold text-slate-900 dark:text-zinc-100 text-sm leading-tight group-hover:text-emerald-600 transition-colors max-w-[150px] sm:max-w-none truncate sm:whitespace-normal">{{ task.title }}</div>
                                 </td>
-                                <td class="px-8 py-6 text-center">
+                                <td class="px-4 sm:px-8 py-4 sm:py-6 text-center">
                                     <span :class="['text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider', getPriorityColor(task.priority)]">
                                         {{ task.priority }}
                                     </span>
                                 </td>
-                                <td class="px-8 py-6 text-center">
+                                <td class="px-4 sm:px-8 py-4 sm:py-6 text-center">
                                     <span class="text-xs font-semibold text-slate-500 dark:text-zinc-500">{{ task.due_date }}</span>
                                 </td>
-                                <td class="px-8 py-6 text-center">
+                                <td class="px-4 sm:px-8 py-4 sm:py-6 text-center">
                                     <span :class="['px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide', getStatusColor(task.status)]">
                                         {{ task.status.replace('_', ' ') }}
                                     </span>
                                 </td>
-                                <td class="px-8 py-6 text-right">
-                                    <div class="flex items-center justify-end gap-1 transition-opacity">
-                                        <button v-if="task.status !== 'done'" @click="updateStatus(task)" class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all" title="Next Status">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <td class="px-4 sm:px-8 py-4 sm:py-6 text-right">
+                                    <div class="flex items-center justify-end gap-0.5 sm:gap-1">
+                                        <button v-if="task.status !== 'done'" @click="updateStatus(task)" class="p-1.5 sm:p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all" title="Next Status">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                             </svg>
                                         </button>
-                                        <button @click="deleteTask(task.id)" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete Task">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <button @click="deleteTask(task.id)" class="p-1.5 sm:p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete Task">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
@@ -221,17 +222,17 @@ const getStatusColor = (status) => {
             </div>
 
             <!-- Daily Report / Analytics Teaser -->
-            <div class="mt-8 bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
-                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+            <div class="mt-8 bg-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
+                <div class="relative z-10 flex flex-col items-center justify-between gap-6 sm:gap-8 text-center md:text-left md:flex-row">
                     <div>
-                        <h2 class="text-2xl font-bold mb-2">Daily Performance Report</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold mb-2">Daily Performance Report</h2>
                         <p class="text-slate-300 text-sm max-w-sm">You have completed <span class="text-white font-bold underline">{{ tasks.data.length ? Math.round((tasks.data.filter(t => t.status === 'done').length / tasks.data.length) * 100) : 0 }}%</span> of your tasks for today. Keep up the momentum!</p>
                     </div>
-                    <div class="flex gap-4">
-                        <Link href="/report" class="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-lg shadow-black/20 no-underline text-center">
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                        <Link href="/report" class="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-lg shadow-black/20 no-underline text-center text-sm">
                             Download PDF
                         </Link>
-                        <button @click="isStatsModalOpen = true" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors border border-white/10">
+                        <button @click="isStatsModalOpen = true" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors border border-white/10 text-sm">
                             View API Stats
                         </button>
                     </div>
