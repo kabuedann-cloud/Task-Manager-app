@@ -178,6 +178,62 @@ The test suite covers:
 
 ---
 
+## Example API Requests
+
+### 1. Create a Task
+```bash
+curl -X POST http://127.0.0.1:8000/api/tasks \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "title": "New important task",
+    "due_date": "2026-04-10",
+    "priority": "high"
+  }'
+```
+
+### 2. Update Task Status
+```bash
+curl -X PATCH http://127.0.0.1:8000/api/tasks/1/status \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"status": "in_progress"}'
+```
+
+### 3. Delete a Completed Task
+```bash
+curl -X DELETE http://127.0.0.1:8000/api/tasks/1 \
+  -H "Accept: application/json"
+```
+
+### 4. Get Daily Report
+```bash
+curl -X GET "http://127.0.0.1:8000/api/tasks/report?date=2026-03-28" \
+  -H "Accept: application/json"
+```
+
+---
+
+## Deployment (Railway)
+
+This application is fully configured for seamless containerized deployment on Railway.
+
+**Deploying on Railway:**
+1. Create a new Railway project and provision a **MySQL Database**.
+2. Connect your GitHub repository to an Empty Service.
+3. Add the following Environment Variables under the Variables tab:
+   - `DB_CONNECTION=mysql`
+   - `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (Copy these from your provisioned MySQL service)
+   - `APP_KEY` (Generate offline using `php artisan key:generate`)
+   - `APP_ENV=production`
+   - `APP_URL=https://your-production-url.app`
+4. Deploy! The project includes a `nixpacks.toml` and `Procfile` which Railway will automatically detect and use to:
+   - Configure the PHP/Node.js environment
+   - Run `npm run build` for Vite assets
+   - Execute database migrations (`php artisan migrate --force`) automatically upon deployment.
+
+---
+
 ## Live Demo
 
 [https://daniel-maina-task-manager-challenge.up.railway.app](https://daniel-maina-task-manager-challenge.up.railway.app)
