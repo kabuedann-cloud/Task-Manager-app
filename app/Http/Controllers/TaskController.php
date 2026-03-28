@@ -49,10 +49,8 @@ class TaskController extends Controller
 
     public function destroy(Task $task)
     {
-        if ($task->status === StatusEnum::DONE) {
-            throw ValidationException::withMessages([
-                'status' => 'Done tasks can not be deleted',
-            ]);
+        if ($task->status !== StatusEnum::DONE) {
+            abort(403, 'Only completed tasks can be deleted.');
         }
 
         $task->delete();

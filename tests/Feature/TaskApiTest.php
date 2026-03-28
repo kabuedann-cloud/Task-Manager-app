@@ -64,7 +64,20 @@ class TaskApiTest extends TestCase
             ->assertSessionHasNoErrors();
     }
 
-    public function test_cannot_delete_a_completed_task()
+    public function test_cannot_delete_a_pending_or_in_progress_task()
+    {
+        $task = Task::create([
+            'title' => 'Active Task',
+            'due_date' => now()->addDay()->format('Y-m-d'),
+            'priority' => PriorityEnum::HIGH->value,
+            'status' => StatusEnum::PENDING->value,
+        ]);
+
+        $this->delete("/tasks/{$task->id}")->assertStatus(403);
+        $this->assertDatabaseHas('tasks', ['id' => $task->id]);
+    }
+
+    public function test_can_delete_a_done_task()
     {
         $task = Task::create([
             'title' => 'Done Task',
@@ -73,8 +86,8 @@ class TaskApiTest extends TestCase
             'status' => StatusEnum::DONE->value,
         ]);
 
-        $this->delete("/tasks/{$task->id}")->assertSessionHasErrors(['status']);
-        $this->assertDatabaseHas('tasks', ['id' => $task->id]);
+        $this->delete("/tasks/{$task->id}")->assertRedirect('/');
+        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
     }
 
     public function test_daily_report_returns_ok()
