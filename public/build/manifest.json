@@ -1,0 +1,50 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-hqpL1AO-.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/Pages/Tasks/Index.vue": {
+    "file": "assets/Index-BVDVXeaN.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Tasks/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "css": [
+      "assets/Index-B3stedXj.css",
+      "assets/app-hqpL1AO-.css"
+    ]
+  },
+  "resources/js/Pages/Tasks/Report.vue": {
+    "file": "assets/Report-Cq02_3jS.js",
+    "name": "Report",
+    "src": "resources/js/Pages/Tasks/Report.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "css": [
+      "assets/Report-IaoczNt2.css",
+      "assets/app-hqpL1AO-.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-qyCDzk-o.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/Pages/Tasks/Index.vue",
+      "resources/js/Pages/Tasks/Report.vue"
+    ],
+    "css": [
+      "assets/app-hqpL1AO-.css"
+    ]
+  }
+}
