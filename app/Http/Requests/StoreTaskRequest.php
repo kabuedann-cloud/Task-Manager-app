@@ -29,4 +29,12 @@ class StoreTaskRequest extends FormRequest
             'priority' => ['required', Rule::enum(PriorityEnum::class)],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'title.unique' => 'A task with this title already exists on the selected due date.',
+            'due_date.after_or_equal' => 'The due date must be today or a future date.',
+        ];
+    }
 }

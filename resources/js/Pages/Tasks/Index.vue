@@ -10,6 +10,9 @@ const isModalOpen = ref(false);
 const isStatsModalOpen = ref(false);
 const filterStatus = ref('All Status');
 
+// Prevent selecting past dates in HTML input
+const minDate = new Date().toISOString().split('T')[0];
+
 const filteredTasks = computed(() => {
     if (filterStatus.value === 'All Status') return props.tasks.data;
     return props.tasks.data.filter(t => t.status.toLowerCase().replace(' ', '_') === filterStatus.value.toLowerCase().replace(' ', '_'));
@@ -279,7 +282,7 @@ const getStatusColor = (status) => {
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
-                            <input v-model="form.due_date" type="date" class="w-full bg-slate-50 dark:bg-slate-600 border border-slate-200 dark:border-slate-500 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-slate-100" required>
+                            <input v-model="form.due_date" type="date" :min="minDate" class="w-full bg-slate-50 dark:bg-slate-600 border border-slate-200 dark:border-slate-500 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-slate-100" required>
                             <div v-if="form.errors.due_date" class="text-red-500 dark:text-red-400 text-xs mt-1">{{ form.errors.due_date }}</div>
                         </div>
                         <div>
