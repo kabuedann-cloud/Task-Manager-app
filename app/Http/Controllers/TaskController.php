@@ -58,8 +58,37 @@ class TaskController extends Controller
         return to_route('tasks.index');
     }
 
-    public function report()
+    public function report(Request $request)
     {
+        if ($request->wantsJson() || $request->is('api/*')) {
+            $date = $request->input('date', today()->toDateString());
+
+            $tasks = Task::whereDate('created_at', $date)
+                ->select('priority', 'status', DB::raw('count(*) as count'))
+                ->groupBy('priority', 'status')
+                ->get();
+
+            $summary = [
+                'high' => ['pending' => 0, 'in_progress' => 0, 'done' => 0],
+                'medium' => ['pending' => 0, 'in_progress' => 0, 'done' => 0],
+                'low' => ['pending' => 0, 'in_progress' => 0, 'done' => 0],
+            ];
+
+            foreach ($tasks as $task) {
+                $priority = $task->priority instanceof \BackedEnum ? $task->priority->value : $task->priority;
+                $status = $task->status instanceof \BackedEnum ? $task->status->value : $task->status;
+
+                if (isset($summary[$priority][$status])) {
+                    $summary[$priority][$status] = (int) $task->count;
+                }
+            }
+
+            return response()->json([
+                'date' => $date,
+                'summary' => $summary
+            ]);
+        }
+
         $report = Task::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->get();
