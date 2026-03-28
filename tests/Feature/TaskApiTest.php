@@ -12,20 +12,18 @@ class TaskApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function it_can_list_tasks()
+    public function test_can_list_tasks()
     {
-        // Simple list check
         Task::factory()->count(3)->create();
         $this->get('/')->assertStatus(200);
     }
 
-    public function it_validates_required_fields_for_task_creation()
+    public function test_validates_required_fields_on_creation()
     {
-        // Mandatory fields check
         $this->post('/tasks', [])->assertSessionHasErrors(['title', 'due_date', 'priority']);
     }
 
-    public function it_enforces_unique_title_and_due_date_constraint()
+    public function test_rejects_duplicate_title_on_same_due_date()
     {
         $task = Task::create([
             'title' => 'Meeting',
@@ -34,7 +32,6 @@ class TaskApiTest extends TestCase
             'status' => StatusEnum::PENDING->value,
         ]);
 
-        // Duplicate title on same day
         $this->post('/tasks', [
             'title' => 'Meeting',
             'due_date' => $task->due_date,
@@ -42,7 +39,7 @@ class TaskApiTest extends TestCase
         ])->assertSessionHasErrors(['title']);
     }
 
-    public function it_restricts_past_due_dates()
+    public function test_rejects_past_due_dates()
     {
         $this->post('/tasks', [
             'title' => 'Old Task',
@@ -51,7 +48,7 @@ class TaskApiTest extends TestCase
         ])->assertSessionHasErrors(['due_date']);
     }
 
-    public function it_enforces_status_transition_rules()
+    public function test_enforces_status_progression_order()
     {
         $task = Task::create([
             'title' => 'Logic Task',
@@ -60,16 +57,14 @@ class TaskApiTest extends TestCase
             'status' => StatusEnum::PENDING->value,
         ]);
 
-        // Invalid jump
         $this->patch("/tasks/{$task->id}/status", ['status' => StatusEnum::DONE->value])
             ->assertSessionHasErrors(['status']);
 
-        // Correct jump
         $this->patch("/tasks/{$task->id}/status", ['status' => StatusEnum::IN_PROGRESS->value])
             ->assertSessionHasNoErrors();
     }
 
-    public function it_prevents_deletion_of_done_tasks()
+    public function test_cannot_delete_a_completed_task()
     {
         $task = Task::create([
             'title' => 'Done Task',
@@ -82,9 +77,9 @@ class TaskApiTest extends TestCase
         $this->assertDatabaseHas('tasks', ['id' => $task->id]);
     }
 
-    public function it_can_generate_a_daily_report()
+    public function test_daily_report_returns_ok()
     {
         Task::create(['title' => 'T1', 'due_date' => now()->format('Y-m-d'), 'priority' => 'low', 'status' => 'pending']);
-        $this->get('/report')->assertStatus(200);
+        $this->get('/tasks/report')->assertStatus(200);
     }
 }

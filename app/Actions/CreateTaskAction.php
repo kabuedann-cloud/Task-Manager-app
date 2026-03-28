@@ -10,7 +10,6 @@ class CreateTaskAction
 {
     public function execute(array $data): Task
     {
-        // Business logic for creation (Status defaults to pending)
         $data['status'] = StatusEnum::PENDING;
 
         return Task::create($data);
