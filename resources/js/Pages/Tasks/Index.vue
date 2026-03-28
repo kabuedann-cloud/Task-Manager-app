@@ -1,0 +1,354 @@
+<script setup>
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+
+const props = defineProps({
+    tasks: Object
+});
+
+const isModalOpen = ref(false);
+const isStatsModalOpen = ref(false);
+const filterStatus = ref('All Status');
+
+const filteredTasks = computed(() => {
+    if (filterStatus.value === 'All Status') return props.tasks.data;
+    return props.tasks.data.filter(t => t.status.toLowerCase().replace(' ', '_') === filterStatus.value.toLowerCase().replace(' ', '_'));
+});
+
+const form = useForm({
+    title: '',
+    due_date: '',
+    priority: 'medium',
+});
+
+const submit = () => {
+    form.post('/tasks', {
+        onSuccess: () => {
+            isModalOpen.value = false;
+            form.reset();
+        },
+    });
+};
+
+const updateStatus = (task) => {
+    let nextStatus = '';
+    let statusLabel = '';
+    if (task.status === 'pending') {
+        nextStatus = 'in_progress';
+        statusLabel = 'In Progress';
+    } else if (task.status === 'in_progress') {
+        nextStatus = 'done';
+        statusLabel = 'Completed';
+    }
+    
+    if (nextStatus) {
+        Swal.fire({
+            title: 'Update Task Status?',
+            text: `Move this task to ${statusLabel}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, update it!',
+            background: document.documentElement.classList.contains('dark') ? '#18181b' : '#ffffff',
+            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+            customClass: {
+                popup: 'rounded-[32px] border-none shadow-2xl',
+                confirmButton: 'rounded-xl px-6 py-2.5',
+                cancelButton: 'rounded-xl px-6 py-2.5'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.patch(`/tasks/${task.id}/status`, {
+                    status: nextStatus
+                });
+            }
+        });
+    }
+};
+
+const deleteTask = (id) => {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e11d48',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, delete it!',
+        background: document.documentElement.classList.contains('dark') ? '#18181b' : '#ffffff',
+        color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+        customClass: {
+            popup: 'rounded-[32px] border-none shadow-2xl',
+            confirmButton: 'rounded-xl px-6 py-2.5',
+            cancelButton: 'rounded-xl px-6 py-2.5'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(`/tasks/${id}`);
+        }
+    });
+};
+
+const getPriorityColor = (priority) => {
+    const colors = {
+        high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+        medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        low: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    };
+    return colors[priority] || 'bg-gray-100 text-gray-700';
+};
+
+const getStatusColor = (status) => {
+    const colors = {
+        pending: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400',
+        in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+        done: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+};
+</script>
+
+<template>
+    <Head title="Task Dashboard" />
+
+    <div class="min-h-screen bg-slate-50 dark:bg-zinc-950 transition-colors duration-300">
+        <!-- Premium Navigation -->
+        <nav class="sticky top-0 z-40 w-full backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 border-b border-slate-200 dark:border-zinc-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400">
+                        Task Management
+                    </span>
+                 </div>
+                <div class="flex items-center gap-4">
+                    <button @click="isModalOpen = true" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all shadow-md shadow-emerald-600/20 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        New Task
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div v-for="stat in [
+                    { label: 'Total Tasks', value: tasks.data.length, color: 'emerald' },
+                    { label: 'Pending', value: tasks.data.filter(t => t.status === 'pending').length, color: 'slate' },
+                    { label: 'In Progress', value: tasks.data.filter(t => t.status === 'in_progress').length, color: 'blue' },
+                    { label: 'Completed', value: tasks.data.filter(t => t.status === 'done').length, color: 'green' }
+                ]" :key="stat.label" class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">{{ stat.label }}</p>
+                    <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ stat.value }}</h3>
+                </div>
+            </div>
+
+            <!-- Task Board / List -->
+            <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden">
+                <div class="px-8 py-6 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-800/50">
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        Recent Tasks
+                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs rounded-full">Development</span>
+                    </h2>
+                    <div class="flex gap-2">
+                        <select v-model="filterStatus" class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                            <option>All Status</option>
+                            <option>Pending</option>
+                            <option>In Progress</option>
+                            <option>Done</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-zinc-800">
+                                <th class="px-8 py-5">Task Details</th>
+                                <th class="px-8 py-5 text-center">Priority</th>
+                                <th class="px-8 py-5 text-center">Due Date</th>
+                                <th class="px-8 py-5 text-center">Status</th>
+                                <th class="px-8 py-5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50 dark:divide-zinc-800/50">
+                            <tr v-if="filteredTasks.length === 0">
+                                <td colspan="5" class="px-8 py-12 text-center text-slate-400 italic">No tasks found. Create one to get started!</td>
+                            </tr>
+                            <tr v-for="task in filteredTasks" :key="task.id" class="group hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                                <td class="px-8 py-6">
+                                    <div class="font-bold text-slate-900 dark:text-zinc-100 text-sm leading-tight group-hover:text-emerald-600 transition-colors">{{ task.title }}</div>
+                                </td>
+                                <td class="px-8 py-6 text-center">
+                                    <span :class="['text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider', getPriorityColor(task.priority)]">
+                                        {{ task.priority }}
+                                    </span>
+                                </td>
+                                <td class="px-8 py-6 text-center">
+                                    <span class="text-xs font-semibold text-slate-500 dark:text-zinc-500">{{ task.due_date }}</span>
+                                </td>
+                                <td class="px-8 py-6 text-center">
+                                    <span :class="['px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide', getStatusColor(task.status)]">
+                                        {{ task.status.replace('_', ' ') }}
+                                    </span>
+                                </td>
+                                <td class="px-8 py-6 text-right">
+                                    <div class="flex items-center justify-end gap-1 transition-opacity">
+                                        <button v-if="task.status !== 'done'" @click="updateStatus(task)" class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all" title="Next Status">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                        <button @click="deleteTask(task.id)" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete Task">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Report / Analytics Teaser -->
+            <div class="mt-8 bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">Daily Performance Report</h2>
+                        <p class="text-slate-300 text-sm max-w-sm">You have completed <span class="text-white font-bold underline">{{ tasks.data.length ? Math.round((tasks.data.filter(t => t.status === 'done').length / tasks.data.length) * 100) : 0 }}%</span> of your tasks for today. Keep up the momentum!</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <Link href="/report" class="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-lg shadow-black/20 no-underline text-center">
+                            Download PDF
+                        </Link>
+                        <button @click="isStatsModalOpen = true" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors border border-white/10">
+                            View API Stats
+                        </button>
+                    </div>
+                </div>
+                <!-- Abstract Design Decor -->
+                <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                <div class="absolute -left-10 -top-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
+            </div>
+        </main>
+
+        <!-- New Task Modal -->
+        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px]">
+            <div class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[32px] shadow-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-center bg-slate-50/50 dark:bg-zinc-800/50">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Create New Task</h3>
+                    <button @click="isModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form @submit.prevent="submit" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-1">Task Title</label>
+                        <input v-model="form.title" type="text" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="What needs to be done?" required>
+                        <div v-if="form.errors.title" class="text-red-500 text-xs mt-1">{{ form.errors.title }}</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-1">Due Date</label>
+                            <input v-model="form.due_date" type="date" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-white" required>
+                            <div v-if="form.errors.due_date" class="text-red-500 text-xs mt-1">{{ form.errors.due_date }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-1">Priority</label>
+                            <select v-model="form.priority" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-slate-900 dark:text-white">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                            <div v-if="form.errors.priority" class="text-red-500 text-xs mt-1">{{ form.errors.priority }}</div>
+                        </div>
+                    </div>
+                    <div class="pt-4 flex gap-3">
+                        <button type="button" @click="isModalOpen = false" class="flex-1 px-4 py-2.5 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" :disabled="form.processing" class="flex-1 px-4 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50">
+                            {{ form.processing ? 'Creating...' : 'Create Task' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- API Stats Modal -->
+        <div v-if="isStatsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px]">
+            <div class="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-[32px] shadow-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-center bg-emerald-600">
+                    <h3 class="text-2xl font-black text-white">Task Overview</h3>
+                    <button @click="isStatsModalOpen = false" class="text-white/80 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-8 space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-6 bg-slate-50 dark:bg-zinc-800 rounded-2xl border border-slate-100 dark:border-zinc-700">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Success Rate</p>
+                            <p class="text-3xl font-black text-slate-900 dark:text-white">99.9%</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 dark:bg-zinc-800 rounded-2xl border border-slate-100 dark:border-zinc-700">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Latency</p>
+                            <p class="text-3xl font-black text-slate-900 dark:text-white">42ms</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Status Distribution</h4>
+                        <div v-for="status in ['pending', 'in_progress', 'done']" :key="status" class="space-y-1">
+                            <div class="flex justify-between text-xs font-bold uppercase">
+                                <span class="text-slate-500">{{ status.replace('_', ' ') }}</span>
+                                <span class="text-slate-900 dark:text-white">{{ tasks.data.filter(t => t.status === status).length }} tasks</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                                <div :class="['h-full transition-all duration-1000', 
+                                    status === 'done' ? 'bg-emerald-500' : 
+                                    status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400']"
+                                    :style="{ width: `${tasks.data.length ? (tasks.data.filter(t => t.status === status).length / tasks.data.length * 100) : 0}%` }">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-4">
+                        <button @click="isStatsModalOpen = false" class="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-xl hover:opacity-90 transition-all shadow-xl">
+                            Close Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+/* Custom Scrollbar for better UX */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+.dark ::-webkit-scrollbar-thumb {
+    background: #1f2937;
+}
+</style>
