@@ -79,7 +79,7 @@ const updateStatus = (task) => {
             background: document.documentElement.classList.contains('dark') ? '#2d3748' : '#ffffff',
             color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b',
             customClass: {
-                popup: 'rounded-[32px] border-none shadow-2xl',
+                popup: 'task-alert-popup border-none shadow-2xl',
                 confirmButton: 'rounded-xl px-6 py-2.5',
                 cancelButton: 'rounded-xl px-6 py-2.5'
             }
@@ -104,7 +104,7 @@ const deleteTask = (task) => {
             background: document.documentElement.classList.contains('dark') ? '#2d3748' : '#ffffff',
             color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b',
             customClass: {
-                popup: 'rounded-[32px] border-none shadow-2xl',
+                popup: 'task-alert-popup border-none shadow-2xl',
                 confirmButton: 'rounded-xl px-6 py-2.5'
             }
         });
@@ -122,7 +122,7 @@ const deleteTask = (task) => {
         background: document.documentElement.classList.contains('dark') ? '#2d3748' : '#ffffff',
         color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#1e293b',
         customClass: {
-            popup: 'rounded-[32px] border-none shadow-2xl',
+            popup: 'task-alert-popup border-none shadow-2xl',
             confirmButton: 'rounded-xl px-6 py-2.5',
             cancelButton: 'rounded-xl px-6 py-2.5'
         }
@@ -388,6 +388,10 @@ const getStatusColor = (status) => {
 </template>
 
 <style>
+.task-alert-popup.swal2-popup {
+    border-radius: 48px !important;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }
