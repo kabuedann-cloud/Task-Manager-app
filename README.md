@@ -1,134 +1,137 @@
-# Task Management Application
+# Task Management API
 
-A full-stack Task Management web application built with **Laravel 12**, **Vue 3**, and **Inertia.js**. The project implements a complete task lifecycle with strict business rules, a good UI, and a RESTful API layer.
+Laravel 12 task management application with a Vue 3 + Inertia web UI and a JSON API that satisfies the take-home assignment requirements.
 
----
+## Stack
 
-## Tech Stack
+- PHP 8.2
+- Laravel 12
+- MySQL / MariaDB
+- Vue 3
+- Inertia.js
+- Vite
+- PHPUnit
 
-| Layer | Technology |
-|---|---|
-| Backend | PHP 8.2, Laravel 12 |
-| Frontend | Vue 3, Inertia.js |
-| Styling | Tailwind CSS v4 |
-| Database | MySQL / MariaDB |
-| Build Tool | Vite |
-| Testing | PHPUnit (Laravel Feature Tests) |
+## Assignment Coverage
 
----
+- Create tasks
+- List tasks with optional `status` filter
+- Update task status with forward-only transitions
+- Delete tasks only when `status = done`
+- Daily task report by `due_date`
+- MySQL migration files
+- SQL dump files: `task_manager_dump.sql` and `task_manager.sql`
+- Seeder with sample task data
 
-## Features
+## Database Schema
 
-- Create tasks with a **title**, **due date**, and **priority** (Low / Medium / High)
-- Tasks follow a strict **status progression**: `Pending → In Progress → Done`
-- Duplicate task titles on the same due date are **rejected**
-- Past due dates are **rejected** on creation
-- Completed (`Done`) tasks **cannot be deleted**
-- Filter tasks by status on the dashboard
-- **Daily performance report** with completion rate and status breakdown
-- Fully **mobile-responsive** UI with light and dark mode support
-- OOP architecture using **Service/Action classes** and **API Resources**
+The `tasks` table contains:
 
----
+- `id`
+- `title`
+- `due_date`
+- `priority` enum: `low`, `medium`, `high`
+- `status` enum: `pending`, `in_progress`, `done`
+- `created_at`
+- `updated_at`
 
-## Project Structure
+There is a unique constraint on `title + due_date`.
 
-```
-app/
-├── Actions/
-│   ├── CreateTaskAction.php         # Handles task creation logic
-│   └── UpdateTaskStatusAction.php   # Enforces status transition rules
-├── Enums/
-│   ├── PriorityEnum.php             # low | medium | high
-│   └── StatusEnum.php               # pending | in_progress | done
-├── Http/
-│   ├── Controllers/TaskController.php
-│   ├── Requests/StoreTaskRequest.php
-│   └── Resources/
-│       ├── TaskResource.php
-│       └── TaskReportResource.php
-└── Models/Task.php
+## API Endpoints
 
-resources/js/Pages/Tasks/
-├── Index.vue    # Main dashboard
-└── Report.vue   # Daily report page
-```
+### Create Task
 
----
+- `POST /api/tasks`
 
-## Business Rules
+Rules:
 
-| Rule | Details |
-|---|---|
-| Unique constraint | A task's `title` must be unique per `due_date` |
-| Due date | Must be today or a future date |
-| Priority | Must be one of: `low`, `medium`, `high` |
-| Status | Can only move forward: `pending → in_progress → done` |
-| Deletion | Tasks with status `done` cannot be deleted |
+- `title` cannot duplicate another task with the same `due_date`
+- `priority` must be `low`, `medium`, or `high`
+- `due_date` must be today or later
 
----
+### List Tasks
 
-## Routes
+- `GET /api/tasks`
 
-| Method | URL | Description |
-|---|---|---|
-| `GET` | `/` | Task dashboard |
-| `POST` | `/tasks` | Create a new task |
-| `PATCH` | `/tasks/{id}/status` | Advance task status |
-| `DELETE` | `/tasks/{id}` | Delete a task (not if done) |
-| `GET` | `/tasks/report` | Daily performance report |
+Rules:
 
----
+- Sorted by priority `high -> medium -> low`
+- Within the same priority, sorted by `due_date` ascending
+- Optional query param: `status`
+- Returns meaningful JSON when no tasks exist
 
-## Database
+Example:
 
-- **Database:** MySQL / MariaDB
-- **Dump file:** `task_manager_dump.sql` (included in the project root)
-
-### Schema
-
-```sql
-tasks
-  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
-  title         VARCHAR(255) NOT NULL
-  due_date      DATE NOT NULL
-  priority      ENUM('low', 'medium', 'high') NOT NULL
-  status        ENUM('pending', 'in_progress', 'done') DEFAULT 'pending'
-  created_at    TIMESTAMP
-  updated_at    TIMESTAMP
+```json
+{
+  "message": "No tasks found.",
+  "data": []
+}
 ```
 
----
+### Update Task Status
+
+- `PATCH /api/tasks/{id}/status`
+
+Rules:
+
+- Allowed transitions:
+  `pending -> in_progress -> done`
+- Skipping and reverting are rejected
+
+### Delete Task
+
+- `DELETE /api/tasks/{id}`
+
+Rules:
+
+- Only tasks with `status = done` can be deleted
+- Otherwise returns `403 Forbidden`
+
+### Daily Report
+
+- `GET /api/tasks/report?date=YYYY-MM-DD`
+
+Returns counts grouped by priority and status for tasks due on the requested date.
+
+Example:
+
+```json
+{
+  "date": "2026-03-28",
+  "summary": {
+    "high": { "pending": 2, "in_progress": 1, "done": 0 },
+    "medium": { "pending": 1, "in_progress": 0, "done": 3 },
+    "low": { "pending": 0, "in_progress": 0, "done": 1 }
+  }
+}
+```
 
 ## Local Setup
 
 ### Requirements
+
 - PHP 8.2+
-- MySQL / MariaDB
 - Composer
-- Node.js & npm
+- Node.js and npm
+- MySQL or MariaDB
 
-### Steps
+### 1. Install dependencies
 
-**1. Clone the repository**
-```bash
-git clone <repository-url>
-cd Cytonn
-```
-
-**2. Install dependencies**
 ```bash
 composer install
 npm install
 ```
 
-**3. Configure environment**
+### 2. Configure environment
+
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-Edit `.env` and set your database credentials:
+Update `.env` for MySQL:
+
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -138,102 +141,111 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-**4. Import the database**
-```bash
-mysql -u root -e "CREATE DATABASE task_manager;"
-mysql -u root task_manager < task_manager_dump.sql
+### 3. Create the database
+
+```sql
+CREATE DATABASE task_manager;
 ```
 
-Or run migrations fresh:
+### 4. Run migrations and seeders
+
 ```bash
-php artisan migrate
+php artisan migrate --seed
 ```
 
-**5. Start the application**
+If you prefer importing a dump instead:
+
 ```bash
-# Terminal 1 — PHP server
+mysql -u root -p task_manager < task_manager_dump.sql
+```
+
+### 5. Start the application
+
+```bash
 php artisan serve
-
-# Terminal 2 — Vite assets
 npm run dev
 ```
 
-Visit `http://127.0.0.1:8000`
+Web UI:
 
----
-
-## Running Tests
-
-```bash
-php artisan test
-```
-
-The test suite covers:
-- Required field validation
-- Unique title + due date constraint
-- Past due date rejection
-- Status progression enforcement
-- Deletion restriction on completed tasks
-- Daily report endpoint
-
----
+- `http://127.0.0.1:8000`
 
 ## Example API Requests
 
-### 1. Create a Task
+### Create
+
 ```bash
 curl -X POST http://127.0.0.1:8000/api/tasks \
-  -H "Content-Type: application/json" \
   -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
   -d '{
-    "title": "New important task",
+    "title": "Finish take-home assignment",
     "due_date": "2026-04-10",
     "priority": "high"
   }'
 ```
 
-### 2. Update Task Status
+### List
+
 ```bash
-curl -X PATCH http://127.0.0.1:8000/api/tasks/1/status \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{"status": "in_progress"}'
+curl -X GET "http://127.0.0.1:8000/api/tasks?status=pending" \
+  -H "Accept: application/json"
 ```
 
-### 3. Delete a Completed Task
+### Update Status
+
+```bash
+curl -X PATCH http://127.0.0.1:8000/api/tasks/1/status \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "in_progress"
+  }'
+```
+
+### Delete
+
 ```bash
 curl -X DELETE http://127.0.0.1:8000/api/tasks/1 \
   -H "Accept: application/json"
 ```
 
-### 4. Get Daily Report
+### Daily Report
+
 ```bash
 curl -X GET "http://127.0.0.1:8000/api/tasks/report?date=2026-03-28" \
   -H "Accept: application/json"
 ```
 
----
+## Tests
 
-## Deployment (Railway)
+Run:
 
-This application is fully configured for seamless containerized deployment on Railway.
+```bash
+php artisan test
+```
 
-**Deploying on Railway:**
-1. Create a new Railway project and provision a **MySQL Database**.
-2. Connect your GitHub repository to an Empty Service.
-3. Add the following Environment Variables under the Variables tab:
-   - `DB_CONNECTION=mysql`
-   - `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (Copy these from your provisioned MySQL service)
-   - `APP_KEY` (Generate offline using `php artisan key:generate`)
-   - `APP_ENV=production`
-   - `APP_URL=https://your-production-url.app`
-4. Deploy! The project includes a `nixpacks.toml` and `Procfile` which Railway will automatically detect and use to:
-   - Configure the PHP/Node.js environment
-   - Run `npm run build` for Vite assets
-   - Execute database migrations (`php artisan migrate --force`) automatically upon deployment.
+Coverage includes:
 
----
+- task creation validation
+- duplicate title plus due date rejection
+- list sorting and filtering
+- status transition enforcement
+- delete restriction
+- daily report summary
 
-## Live Demo
+## Deployment
 
-[https://daniel-maina-task-manager-challenge.up.railway.app](https://daniel-maina-task-manager-challenge.up.railway.app)
+This repo includes `nixpacks.toml` and `Procfile` for Railway-style deployment with MySQL.
+
+Typical deployment steps:
+
+1. Provision a MySQL database.
+2. Set the production `.env` values.
+3. Run `php artisan migrate --force`.
+4. Build frontend assets with `npm run build`.
+5. Start the app with the provided process configuration.
+
+## Hosted URL
+
+- `https://daniel-maina-task-manager-challenge.up.railway.app`

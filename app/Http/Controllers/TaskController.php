@@ -2,30 +2,53 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use App\Models\Task;
 use App\Actions\CreateTaskAction;
 use App\Actions\UpdateTaskStatusAction;
-use App\Http\Requests\StoreTaskRequest;
-use App\Http\Resources\TaskResource;
 use App\Enums\StatusEnum;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Http\Resources\TaskReportResource;
-use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
+use App\Http\Resources\TaskResource;
+use App\Models\Task;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
+        if ($this->isApiRequest($request)) {
+            $validated = $request->validate([
+                'status' => ['sometimes', Rule::enum(StatusEnum::class)],
+            ]);
+
+            $tasks = $this->applyTaskListingOrder(
+                Task::query()->when(
+                    isset($validated['status']),
+                    fn (Builder $query) => $query->where('status', $validated['status'])
+                )
+            )->get();
+
+            if ($tasks->isEmpty()) {
+                return response()->json([
+                    'message' => 'No tasks found.',
+                    'data' => [],
+                ]);
+            }
+
+            return TaskResource::collection($tasks);
+        }
+
         $query = Task::query();
 
         if ($request->has('status') && $request->status !== 'All Status') {
             $query->where('status', strtolower(str_replace(' ', '_', $request->status)));
         }
 
-        $tasks = $query->latest()->get();
+        $tasks = $this->applyTaskListingOrder($query)->get();
 
         return Inertia::render('Tasks/Index', [
             'tasks' => TaskResource::collection($tasks),
@@ -36,20 +59,22 @@ class TaskController extends Controller
     {
         $task = $createTaskAction->execute($request->validated());
 
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json($task, 201);
+        if ($this->isApiRequest($request)) {
+            return (new TaskResource($task))
+                ->response()
+                ->setStatusCode(201);
         }
 
         return to_route('tasks.index');
     }
 
-    public function updateStatus(Request $request, Task $task, UpdateTaskStatusAction $updateTaskStatusAction)
+    public function updateStatus(UpdateTaskStatusRequest $request, Task $task, UpdateTaskStatusAction $updateTaskStatusAction)
     {
-        $status = StatusEnum::from($request->status);
+        $status = StatusEnum::from($request->validated('status'));
         $task = $updateTaskStatusAction->execute($task, $status);
 
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json($task);
+        if ($this->isApiRequest($request)) {
+            return new TaskResource($task);
         }
 
         return to_route('tasks.index');
@@ -72,10 +97,14 @@ class TaskController extends Controller
 
     public function report(Request $request)
     {
-        if ($request->wantsJson() || $request->is('api/*')) {
-            $date = $request->input('date', today()->toDateString());
+        if ($this->isApiRequest($request)) {
+            $validated = $request->validate([
+                'date' => ['nullable', 'date_format:Y-m-d'],
+            ]);
 
-            $tasks = Task::whereDate('created_at', $date)
+            $date = $validated['date'] ?? today()->toDateString();
+
+            $tasks = Task::whereDate('due_date', $date)
                 ->select('priority', 'status', DB::raw('count(*) as count'))
                 ->groupBy('priority', 'status')
                 ->get();
@@ -97,7 +126,7 @@ class TaskController extends Controller
 
             return response()->json([
                 'date' => $date,
-                'summary' => $summary
+                'summary' => $summary,
             ]);
         }
 
@@ -109,5 +138,25 @@ class TaskController extends Controller
             'report' => TaskReportResource::collection($report),
             'total' => Task::count(),
         ]);
+    }
+
+    private function applyTaskListingOrder(Builder $query): Builder
+    {
+        return $query
+            ->orderByRaw("
+                CASE priority
+                    WHEN 'high' THEN 1
+                    WHEN 'medium' THEN 2
+                    WHEN 'low' THEN 3
+                    ELSE 4
+                END
+            ")
+            ->orderBy('due_date')
+            ->orderBy('id');
+    }
+
+    private function isApiRequest(Request $request): bool
+    {
+        return $request->wantsJson() || $request->is('api/*');
     }
 }
