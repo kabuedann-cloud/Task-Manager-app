@@ -29,10 +29,13 @@ const printPage = () => {
     window.print();
 };
 
+const completedCount = computed(() => {
+    return props.report.data.find(r => r.status === 'done')?.count || 0;
+});
+
 const completionRate = computed(() => {
     if (!props.total) return 0;
-    const doneCount = props.report.data.find(r => r.status === 'done')?.count || 0;
-    return Math.round((doneCount / props.total) * 100);
+    return Math.round((completedCount.value / props.total) * 100);
 });
 
 const isDarkMode = ref(false);
@@ -61,23 +64,23 @@ const toggleTheme = () => {
 </script>
 
 <template>
-    <Head title="Activity Report" />
+    <Head title="Task Report" />
 
-    <div class="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 print:bg-white print:py-0">
+    <div class="min-h-screen bg-slate-100 dark:bg-slate-900 transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 print:bg-white print:py-0">
         <div class="max-w-5xl mx-auto">
             <!-- Header Section -->
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-5 mb-8 bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 print:border-none print:shadow-none print:p-0 print:mb-8">
+            <div class="mb-8 flex flex-col items-start gap-5 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800 print:mb-8 print:border-none print:p-0 print:shadow-none md:flex-row md:items-center md:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/20 text-white print:hidden flex-shrink-0">
+                    <div class="h-10 w-10 flex-shrink-0 rounded-md bg-emerald-600 text-white print:hidden flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-1 flex items-center gap-3">
-                            Activity Report
+                        <h1 class="mb-1 text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">
+                            Task Report
                         </h1>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium flex items-center gap-1.5">
+                        <p class="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
@@ -86,7 +89,7 @@ const toggleTheme = () => {
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-3 w-full md:w-auto mt-2 md:mt-0 no-print">
-                    <button @click="toggleTheme" class="md:flex-none p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center" title="Toggle Dark Mode">
+                    <button @click="toggleTheme" class="flex items-center justify-center rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white md:flex-none" title="Toggle Dark Mode">
                         <svg v-if="!isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
@@ -94,13 +97,13 @@ const toggleTheme = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                     </button>
-                    <Link href="/" class="flex-1 md:flex-none px-5 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all text-center text-sm no-underline flex items-center justify-center gap-2">
+                    <Link href="/" class="flex flex-1 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm font-medium text-slate-700 no-underline transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700/50 md:flex-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                         </svg>
-                        Dashboard
+                        Back to Tasks
                     </Link>
-                     <button @click="printPage" class="flex-1 md:flex-none px-5 py-2 border border-slate-800 bg-slate-900 dark:bg-emerald-600 dark:border-emerald-600 text-white rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-emerald-500 transition-all shadow-md flex items-center justify-center gap-2 text-sm">
+                    <button @click="printPage" class="flex flex-1 items-center justify-center gap-2 rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 md:flex-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                         </svg>
@@ -111,64 +114,62 @@ const toggleTheme = () => {
 
             <!-- Stats Overview -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-                    <div class="absolute right-0 top-0 w-24 h-24 bg-slate-400/5 rounded-full blur-2xl transition-colors"></div>
-                    <div class="flex items-center gap-3 mb-2 relative z-10 w-full">
-                        <div class="w-8 h-8 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-lg flex items-center justify-center">
+                <div class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+                    <div class="mb-2 flex w-full items-center gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                         </div>
-                        <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Monitored</h3>
+                        <h3 class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Tasks</h3>
                     </div>
-                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white relative z-10 pl-1">{{ total }}</h2>
+                    <h2 class="pl-1 text-3xl font-semibold text-slate-900 dark:text-white sm:text-4xl">{{ total }}</h2>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-                    <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors"></div>
-                    <div class="flex items-center gap-3 mb-2 relative z-10">
-                        <div class="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center">
+                <div class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+                    <div class="mb-2 flex items-center gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
-                        <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Success Rate</h3>
+                        <h3 class="text-xs font-medium text-slate-500 dark:text-slate-400">Completion Rate</h3>
                     </div>
-                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white relative z-10 flex items-baseline gap-1 pl-1">
+                    <h2 class="flex items-baseline gap-1 pl-1 text-3xl font-semibold text-slate-900 dark:text-white sm:text-4xl">
                         {{ completionRate }}<span class="text-xl font-bold text-slate-400">%</span>
                     </h2>
                 </div>
             </div>
 
             <!-- Detailed Table -->
-            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-slate-700/60 shadow-sm overflow-hidden print:border-slate-300">
-                <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/80">
+            <div class="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 print:border-slate-300">
+                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900/40">
                     <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                        Status Distribution Details
+                        Status Summary
                     </h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
-                            <tr class="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700/60 text-slate-400 dark:text-slate-500 uppercase text-[10px] sm:text-xs font-bold tracking-widest">
-                                <th class="px-6 py-4">Pipeline Stage</th>
-                                <th class="px-6 py-4 text-center">Volume</th>
-                                <th class="px-6 py-4 text-right w-1/3">Distribution</th>
+                            <tr class="border-b border-slate-200 bg-white text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-center">Count</th>
+                                <th class="px-6 py-4 text-right w-1/3">Share</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50 dark:divide-slate-700/30">
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                             <tr v-if="report.data.length === 0">
-                                <td colspan="3" class="px-6 py-10 text-center text-slate-400 dark:text-slate-500 italic text-sm">No task data available for the generated timeframe.</td>
+                                <td colspan="3" class="px-6 py-10 text-center text-slate-400 dark:text-slate-500 italic text-sm">No task data available for this report.</td>
                             </tr>
-                            <tr v-for="item in report.data" :key="item.status" class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group">
+                            <tr v-for="item in report.data" :key="item.status" class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40">
                                 <td class="px-6 py-5">
                                     <div class="flex items-center gap-3">
-                                        <div :class="['w-2 h-2 rounded-full shadow-[0_0_8px] ring-2 ring-white dark:ring-slate-800', getStatusDotColor(item.status), getStatusDotColor(item.status).replace('bg-', 'shadow-').replace('500','500/50')]"></div>
-                                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 capitalize tracking-wide">{{ item.status.replace('_', ' ') }}</span>
+                                        <div :class="['h-2 w-2 rounded-full', getStatusDotColor(item.status)]"></div>
+                                        <span class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">{{ item.status.replace('_', ' ') }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-5 text-center">
-                                    <span :class="['px-3 py-1 rounded-full text-xs font-bold inline-block', getStatusColor(item.status)]">
+                                    <span :class="['inline-block rounded-md px-3 py-1 text-xs font-medium', getStatusColor(item.status)]">
                                         {{ item.count }} {{ item.count === 1 ? 'Task' : 'Tasks' }}
                                     </span>
                                 </td>
@@ -189,12 +190,8 @@ const toggleTheme = () => {
             </div>
 
             <!-- Footer -->
-            <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/60 text-center flex flex-col sm:flex-row justify-between items-center gap-3 text-xs font-medium text-slate-400 dark:text-slate-500 print:mt-16">
-                <p>Automated System Report &bull; Task Manager App</p>
-                <div class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                    System is operational
-                </div>
+            <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/60 text-center text-xs font-medium text-slate-400 dark:text-slate-500 print:mt-16">
+                <p>{{ completedCount }} completed task{{ completedCount === 1 ? '' : 's' }} out of {{ total }} total.</p>
             </div>
         </div>
     </div>

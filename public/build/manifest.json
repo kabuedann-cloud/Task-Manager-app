@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BI41cLib.css",
+    "file": "assets/app-BsOND59g.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,7 +9,7 @@
     ]
   },
   "resources/js/Pages/Tasks/Index.vue": {
-    "file": "assets/Index-D3agCdQj.js",
+    "file": "assets/Index-DpRzZVOJ.js",
     "name": "Index",
     "src": "resources/js/Pages/Tasks/Index.vue",
     "isDynamicEntry": true,
@@ -17,12 +17,12 @@
       "resources/js/app.js"
     ],
     "css": [
-      "assets/Index-B3stedXj.css",
-      "assets/app-BI41cLib.css"
+      "assets/Index-Cxje1bOY.css",
+      "assets/app-BsOND59g.css"
     ]
   },
   "resources/js/Pages/Tasks/Report.vue": {
-    "file": "assets/Report-Dgdld_-u.js",
+    "file": "assets/Report-PSMsOfOb.js",
     "name": "Report",
     "src": "resources/js/Pages/Tasks/Report.vue",
     "isDynamicEntry": true,
@@ -30,12 +30,12 @@
       "resources/js/app.js"
     ],
     "css": [
-      "assets/Report-IaoczNt2.css",
-      "assets/app-BI41cLib.css"
+      "assets/Report-6XxDnOtg.css",
+      "assets/app-BsOND59g.css"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DLz4SHd2.js",
+    "file": "assets/app-D1X_Mj3S.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -44,7 +44,7 @@
       "resources/js/Pages/Tasks/Report.vue"
     ],
     "css": [
-      "assets/app-BI41cLib.css"
+      "assets/app-BsOND59g.css"
     ]
   }
 }
